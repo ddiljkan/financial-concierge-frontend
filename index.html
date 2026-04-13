@@ -124,10 +124,13 @@
   <footer class="footer">
     <div class="container">Financial Concierge static website starter.</div>
   </footer>
+  <script src="./config.js"></script>
   <script>
     const config = {
-      apiBaseUrl: 'REPLACE_WITH_API_GATEWAY_URL',
-      uploadPath: '/upload-url'
+      apiBaseUrl: window.APP_CONFIG?.API_BASE_URL || '',
+      uploadPath: window.APP_CONFIG?.UPLOAD_PATH || '/upload-url',
+      awsRegion: window.APP_CONFIG?.AWS_REGION || 'eu-central-1',
+      appName: window.APP_CONFIG?.APP_NAME || 'Financial Concierge'
     };
 
     const fileInput = document.getElementById('fileUpload');
@@ -163,8 +166,8 @@
         fileInput.value = '';
         return;
       }
-      if (config.apiBaseUrl.includes('REPLACE_WITH_API_GATEWAY_URL')) {
-        setStatus(`Selected ${file.name}. Connect your API URL next to enable S3 upload.`, 'success');
+      if (!config.apiBaseUrl || config.apiBaseUrl.includes('REPLACE_WITH_API_ID')) {
+        setStatus(`Selected ${file.name}. Update config.js with your API Gateway URL to enable S3 upload.`, 'success');
         return;
       }
       setStatus(`Selected ${file.name}. The page is ready for presigned URL integration.`, 'success');
