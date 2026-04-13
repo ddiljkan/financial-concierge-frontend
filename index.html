@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financial Concierge</title>
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=cabinet-grotesk@500,700,800&display=swap" rel="stylesheet" />
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
+      --color-bg: #f7f6f2; --color-surface:#f9f8f5; --color-surface-2:#fbfbf9; --color-border:#d4d1ca; --color-divider:#dcd9d5; --color-text:#28251d; --color-text-muted:#6d6a63; --color-text-faint:#9d9a92; --color-text-inverse:#f9f8f4; --color-primary:#01696f; --color-primary-hover:#0c4e54; --color-primary-highlight:#cedcd8; --radius-sm:0.375rem; --radius-md:0.5rem; --radius-lg:0.75rem; --radius-xl:1rem; --radius-full:9999px; --shadow-sm:0 1px 2px rgba(0,0,0,.06); --shadow-md:0 8px 24px rgba(0,0,0,.08); --font-body:'General Sans',sans-serif; --font-display:'Cabinet Grotesk',sans-serif; --transition:180ms cubic-bezier(0.16,1,0.3,1);
+    }
+    [data-theme="dark"] { --color-bg:#171614; --color-surface:#1c1b19; --color-surface-2:#201f1d; --color-border:#393836; --color-divider:#262523; --color-text:#cdccca; --color-text-muted:#a5a29b; --color-text-faint:#79766f; --color-text-inverse:#171614; --color-primary:#4f98a3; --color-primary-hover:#227f8b; --color-primary-highlight:#313b3b; --shadow-sm:0 1px 2px rgba(0,0,0,.2); --shadow-md:0 10px 28px rgba(0,0,0,.35); }
+    *{box-sizing:border-box;margin:0;padding:0} html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth} body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);line-height:1.6;background:radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 30%), var(--color-bg);color:var(--color-text)} img,svg{display:block;max-width:100%;height:auto} button,input{font:inherit;color:inherit} button{cursor:pointer;border:none;background:none} a{text-decoration:none;color:inherit} :focus-visible{outline:2px solid var(--color-primary);outline-offset:3px}
+    .container{width:min(1120px,calc(100% - 2rem));margin-inline:auto}
+    .skip-link{position:absolute;left:-9999px;top:var(--space-2);background:var(--color-primary);color:var(--color-text-inverse);padding:var(--space-3) var(--space-4);border-radius:var(--radius-md)} .skip-link:focus{left:var(--space-2)}
+    .header{position:sticky;top:0;z-index:10;background:color-mix(in srgb, var(--color-bg) 88%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid color-mix(in srgb, var(--color-text) 10%, transparent)}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) 0;gap:var(--space-4)}
+    .brand{display:flex;align-items:center;gap:var(--space-3);font-size:var(--text-sm);font-weight:700;letter-spacing:.02em}
+    .brand-mark{width:42px;height:42px;padding:8px;border-radius:14px;background:linear-gradient(135deg,var(--color-primary-highlight),var(--color-surface-2));box-shadow:var(--shadow-sm);color:var(--color-primary)}
+    .theme-toggle{min-width:44px;min-height:44px;display:grid;place-items:center;border:1px solid color-mix(in srgb, var(--color-text) 10%, transparent);border-radius:var(--radius-full);background:var(--color-surface)}
+    .hero{padding:clamp(4rem,8vw,7rem) 0 var(--space-16)}
+    .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:var(--space-8);align-items:center}
+    .eyebrow{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--radius-full);background:var(--color-primary-highlight);color:var(--color-primary);font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+    h1{font-family:var(--font-display);font-size:var(--text-xl);line-height:1.02;letter-spacing:-.03em;max-width:12ch;margin-top:var(--space-5)}
+    .lead{margin-top:var(--space-5);max-width:58ch;color:var(--color-text-muted)}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-6)}
+    .btn{min-height:48px;padding:0 var(--space-5);border-radius:var(--radius-full);display:inline-flex;align-items:center;justify-content:center;font-size:var(--text-sm);font-weight:600;transition:all var(--transition)}
+    .btn-primary{background:var(--color-primary);color:var(--color-text-inverse);box-shadow:var(--shadow-md)} .btn-primary:hover{background:var(--color-primary-hover)}
+    .btn-secondary{border:1px solid color-mix(in srgb, var(--color-text) 12%, transparent);background:var(--color-surface)}
+    .panel{background:color-mix(in srgb, var(--color-surface) 92%, transparent);border:1px solid color-mix(in srgb, var(--color-text) 10%, transparent);border-radius:var(--radius-xl);box-shadow:var(--shadow-md)}
+    .upload-card{padding:var(--space-8)}
+    .upload-box{margin-top:var(--space-5);padding:var(--space-8);border:1.5px dashed color-mix(in srgb, var(--color-primary) 35%, var(--color-border));border-radius:var(--radius-xl);background:linear-gradient(180deg,color-mix(in srgb, var(--color-primary) 6%, transparent),transparent);text-align:center}
+    .upload-box p{margin:0 auto;color:var(--color-text-muted);max-width:34ch}
+    .file-input{display:none}
+    .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4);margin-top:var(--space-8)}
+    .meta-item{padding:var(--space-4);background:var(--color-surface-2);border-radius:var(--radius-lg);border:1px solid color-mix(in srgb, var(--color-text) 8%, transparent)}
+    .meta-item span{display:block;font-size:var(--text-xs);color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.08em}
+    .meta-item strong{display:block;margin-top:var(--space-2);font-size:var(--text-sm)}
+    .section{padding:0 0 var(--space-16)}
+    .section-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4)}
+    .feature{padding:var(--space-6)}
+    .feature h2{font-size:var(--text-lg);font-family:var(--font-body);font-weight:600}
+    .feature p{margin-top:var(--space-3);color:var(--color-text-muted)}
+    .status{margin-top:var(--space-5);padding:var(--space-4);border-radius:var(--radius-lg);background:var(--color-surface-2);border:1px solid color-mix(in srgb, var(--color-text) 8%, transparent);font-size:var(--text-sm)}
+    .status[data-state="error"]{border-color:color-mix(in srgb, #a12c7b 30%, transparent)}
+    .status[data-state="success"]{border-color:color-mix(in srgb, #437a22 30%, transparent)}
+    .footer{padding:var(--space-8) 0 var(--space-10);color:var(--color-text-faint);font-size:var(--text-sm)}
+    @media (max-width: 900px){.hero-grid,.section-grid,.meta{grid-template-columns:1fr}h1{max-width:14ch}.upload-card{padding:var(--space-6)}}
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <header class="header">
+    <div class="container header-inner">
+      <div class="brand" aria-label="Financial Concierge">
+        <div class="brand-mark">
+          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <path d="M17 43.5V20.5C17 18.0147 19.0147 16 21.5 16H42.5C44.9853 16 47 18.0147 47 20.5V43.5C47 45.9853 44.9853 48 42.5 48H21.5C19.0147 48 17 45.9853 17 43.5Z" stroke="currentColor" stroke-width="3.5"/>
+            <path d="M25 37L31 31L35 35L43 27" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M39 27H43V31" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>Financial Concierge</div>
+      </div>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+  <main id="main">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow">Financial document intake</div>
+          <h1>Upload financial documents through a simple static website.</h1>
+          <p class="lead">This frontend is ready for deployment to Amazon S3 or AWS Amplify Hosting. It already includes the upload UI and is prepared to call your future API for presigned S3 URLs.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#upload">Open uploader</a>
+            <a class="btn btn-secondary" href="#next">View next phase</a>
+          </div>
+        </div>
+        <div class="panel upload-card" id="upload">
+          <div class="eyebrow">Upload</div>
+          <h2 style="margin-top:1rem;font-size:var(--text-lg);font-family:var(--font-body);font-weight:600;">Send receipts and statements</h2>
+          <p style="margin-top:.75rem;color:var(--color-text-muted);">Accepted formats: PDF, PNG, JPG, JPEG. When your Lambda is ready, this page can request a presigned URL and upload directly to S3.</p>
+          <div class="upload-box">
+            <label for="fileUpload" class="btn btn-primary">Choose file</label>
+            <input id="fileUpload" class="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,image/png,image/jpeg,application/pdf" />
+            <p style="margin-top:1rem;">For now, the UI validates the file type and is ready to be connected to your backend endpoint.</p>
+          </div>
+          <div class="status" id="status" data-state="idle">No file selected yet.</div>
+          <div class="meta">
+            <div class="meta-item"><span>Deployment</span><strong>S3 static hosting or Amplify</strong></div>
+            <div class="meta-item"><span>Allowed files</span><strong>pdf, png, jpg, jpeg</strong></div>
+            <div class="meta-item"><span>Next step</span><strong>Presigned URL Lambda integration</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="section">
+      <div class="container section-grid">
+        <article class="panel feature">
+          <h2>Deployable now</h2>
+          <p>This is a single-file static site, so you can upload it directly to S3 or publish it through Amplify without additional build steps.</p>
+        </article>
+        <article class="panel feature">
+          <h2>Backend-ready</h2>
+          <p>The JavaScript already contains a configuration block for your future API endpoint that will return presigned S3 upload URLs.</p>
+        </article>
+        <article class="panel feature" id="next">
+          <h2>Dashboard-ready</h2>
+          <p>The layout leaves room for your next iteration, where financial summaries and dashboard components can be added.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="container">Financial Concierge static website starter.</div>
+  </footer>
+  <script>
+    const config = {
+      apiBaseUrl: 'REPLACE_WITH_API_GATEWAY_URL',
+      uploadPath: '/upload-url'
+    };
+
+    const fileInput = document.getElementById('fileUpload');
+    const statusEl = document.getElementById('status');
+    const themeToggle = document.querySelector('[data-theme-toggle]');
+    let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+
+    function renderThemeIcon() {
+      themeToggle.innerHTML = theme === 'dark'
+        ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+        : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    }
+    renderThemeIcon();
+
+    themeToggle.addEventListener('click', () => {
+      theme = theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      renderThemeIcon();
+    });
+
+    function setStatus(message, state = 'idle') {
+      statusEl.textContent = message;
+      statusEl.dataset.state = state;
+    }
+
+    fileInput.addEventListener('change', async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const allowed = ['application/pdf', 'image/png', 'image/jpeg'];
+      if (!allowed.includes(file.type)) {
+        setStatus('Unsupported file type. Please upload PDF, PNG, JPG, or JPEG.', 'error');
+        fileInput.value = '';
+        return;
+      }
+      if (config.apiBaseUrl.includes('REPLACE_WITH_API_GATEWAY_URL')) {
+        setStatus(`Selected ${file.name}. Connect your API URL next to enable S3 upload.`, 'success');
+        return;
+      }
+      setStatus(`Selected ${file.name}. The page is ready for presigned URL integration.`, 'success');
+    });
+  </script>
+</body>
+</html>
