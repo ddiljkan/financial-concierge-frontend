@@ -4,25 +4,39 @@ This package contains only the static website for deployment to Amazon S3 static
 
 ## Files
 - `index.html` — complete static frontend
+- `config.js` — browser-readable configuration values
 
-## Configuration
-In `index.html`, update the config block when your backend is ready:
-- `apiBaseUrl` — your API Gateway base URL
-- `uploadPath` — your route for generating presigned URLs
+## How configuration works
+The website loads values from `config.js` through `window.APP_CONFIG`.
+This is useful for values such as:
+- API Gateway base URL
+- upload route path
+- AWS region
+- app name
 
-## Accepted uploads
-- PDF
-- PNG
-- JPG / JPEG
+## Important
+Do not store secrets in `config.js`.
+Anything inside this file is public and visible in the browser.
+Only place non-sensitive frontend configuration there.
+
+## Example
+```js
+window.APP_CONFIG = {
+  API_BASE_URL: 'https://abc123.execute-api.eu-central-1.amazonaws.com',
+  UPLOAD_PATH: '/upload-url',
+  AWS_REGION: 'eu-central-1',
+  APP_NAME: 'Financial Concierge'
+};
+```
 
 ## Deployment
 ### S3
-Upload `index.html` to your website bucket and set it as the index document.
+Upload both `index.html` and `config.js` to your website bucket.
 
 ### Amplify
-Deploy the folder as a static app. No build process is required.
+Commit both files to your frontend repository and deploy normally.
 
 ## Current behavior
 - The page validates file types in the browser.
-- The page is prepared for direct S3 uploads via presigned URLs.
-- Once your Lambda/API is ready, only the config block needs to be updated.
+- The page reads runtime-like configuration from `config.js`.
+- Once your Lambda/API is ready, update `config.js` and redeploy.
