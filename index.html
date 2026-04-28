@@ -157,21 +157,70 @@
       statusEl.dataset.state = state;
     }
 
-    fileInput.addEventListener('change', async (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      const allowed = ['application/pdf', 'image/png', 'image/jpeg'];
-      if (!allowed.includes(file.type)) {
-        setStatus('Unsupported file type. Please upload PDF, PNG, JPG, or JPEG.', 'error');
-        fileInput.value = '';
-        return;
-      }
-      if (!config.apiBaseUrl || config.apiBaseUrl.includes('REPLACE_WITH_API_ID')) {
-        setStatus(`Selected ${file.name}. Update config.js with your API Gateway URL to enable S3 upload.`, 'success');
-        return;
-      }
-      setStatus(`Selected ${file.name}. The page is ready for presigned URL integration.`, 'success');
+fileInput.addEventListener('change', async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const allowed = ['application/pdf', 'image/png', 'image/jpeg'];
+  if (!allowed.includes(file.type)) {
+    setStatus('Unsupported file type. Please upload PDF, PNG, JPG, or JPEG.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  if (!config.apiBaseUrl || config.apiBaseUrl.includes('REPLACE_WITH_API_ID')) {
+    setStatus(`Selected ${file.name}. Update config.js with your API Gateway URL to enable S3 upload.`, 'error');
+    return;
+  }
+
+  try {
+    setStatus(`Requesting upload URL for ${file.name} ...`, 'idle');
+
+    const params = new URLSearchParams({
+      filename: file.name,
+      contentType: file.type
     });
+
+    const presignUrl = `${config.apiBaseUrl}${config.uploadPath}?${params.toString()}`;
+
+    const presignResponse = await fetch(presignUrl, {
+      method: 'GET'
+    });
+
+    if (!presignResponse.ok) {
+      throw new Error(`Failed to get upload URL (${presignResponse.status})`);
+    }
+
+    const data = await presignResponse.json();
+    const uploadUrl = data.uploadUrl;
+    const s3Key = data.s3Key;
+
+    if (!uploadUrl) {
+      throw new Error('Response did not contain an upload URL');
+    }
+
+    setStatus(`Uploading ${file.name} to secure storage ...`, 'idle');
+
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type
+      },
+      body: file
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error(`Upload failed (${uploadResponse.status})`);
+    }
+
+    setStatus(`Upload von ${file.name} erfolgreich abgeschlossen.`, 'success');
+    console.log('Uploaded to S3 key:', s3Key);
+    fileInput.value = '';
+  } catch (err) {
+    console.error(err);
+    setStatus(`Upload fehlgeschlagen: ${err.message}`, 'error');
+  }
+});
   </script>
 </body>
 </html>
