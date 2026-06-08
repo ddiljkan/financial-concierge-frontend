@@ -92,10 +92,13 @@
           <p style="margin-top:.75rem;color:var(--color-text-muted);">Accepted formats: PDF, PNG, JPG, JPEG. When your Lambda is ready, this page can request a presigned URL and upload directly to S3.</p>
           <div class="upload-box">
             <label for="fileUpload" class="btn btn-primary">Choose file</label>
-            <input id="fileUpload" class="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,image/png,image/jpeg,application/pdf" />
+            <input id="fileUpload" class="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,image/png,image/jpeg,application/pdf" multiple />
             <p style="margin-top:1rem;">For now, the UI validates the file type and is ready to be connected to your backend endpoint.</p>
           </div>
-          <div class="status" id="status" data-state="idle">No file selected yet.</div>
+          <div class="status" id="status" data-state="idle">
+            <ul id="fileList" style="list-style:none;display:flex;flex-direction:column;gap:0.4rem;"></ul>
+            <span id="statusSummary">No file selected yet.</span>
+          </div>
           <div class="meta">
             <div class="meta-item"><span>Deployment</span><strong>S3 static hosting or Amplify</strong></div>
             <div class="meta-item"><span>Allowed files</span><strong>pdf, png, jpg, jpeg</strong></div>
@@ -158,68 +161,71 @@
     }
 
 fileInput.addEventListener('change', async (event) => {
-  const file = event.target.files?.[0];
-  if (!file) return;
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
 
-  const allowed = ['application/pdf', 'image/png', 'image/jpeg'];
-  if (!allowed.includes(file.type)) {
-    setStatus('Unsupported file type. Please upload PDF, PNG, JPG, or JPEG.', 'error');
-    fileInput.value = '';
-    return;
-  }
+  const fileList = document.getElementById('fileList');
+  const statusSummary = document.getElementById('statusSummary');
+  fileList.innerHTML = '';
 
-  if (!config.apiBaseUrl || config.apiBaseUrl.includes('REPLACE_WITH_API_ID')) {
-    setStatus(`Selected ${file.name}. Update config.js with your API Gateway URL to enable S3 upload.`, 'error');
-    return;
-  }
+  // Eine Zeile pro File anlegen
+  const items = files.map(file => {
+    const li = document.createElement('li');
+    li.textContent = `${file.name} — wird geprüft...`;
+    fileList.appendChild(li);
+    return { file, li };
+  });
 
-  try {
-    setStatus(`Requesting upload URL for ${file.name} ...`, 'idle');
+  statusSummary.textContent = `${files.length} Datei(en) werden hochgeladen...`;
+  document.getElementById('status').dataset.state = 'idle';
 
-    const params = new URLSearchParams({
-      filename: file.name,
-      contentType: file.type
-    });
+  let successCount = 0;
+  let errorCount = 0;
 
-    const presignUrl = `${config.apiBaseUrl}${config.uploadPath}?${params.toString()}`;
-
-    const presignResponse = await fetch(presignUrl, {
-      method: 'GET'
-    });
-
-    if (!presignResponse.ok) {
-      throw new Error(`Failed to get upload URL (${presignResponse.status})`);
+  for (const { file, li } of items) {
+    const allowed = ['application/pdf', 'image/png', 'image/jpeg'];
+    if (!allowed.includes(file.type)) {
+      li.textContent = `${file.name} — ✗ Ungültiges Format`;
+      errorCount++;
+      continue;
     }
 
-    const data = await presignResponse.json();
-    const uploadUrl = data.uploadUrl;
-    const s3Key = data.s3Key;
-
-    if (!uploadUrl) {
-      throw new Error('Response did not contain an upload URL');
+    if (!config.apiBaseUrl || config.apiBaseUrl.includes('REPLACE_WITH_API_ID')) {
+      li.textContent = `${file.name} — ✗ API URL nicht konfiguriert`;
+      errorCount++;
+      continue;
     }
 
-    setStatus(`Uploading ${file.name} to secure storage ...`, 'idle');
+    try {
+      li.textContent = `${file.name} — ⏳ Presigned URL wird geholt...`;
+      const params = new URLSearchParams({ filename: file.name, contentType: file.type });
+      const presignResponse = await fetch(`${config.apiBaseUrl}${config.uploadPath}?${params}`, { method: 'GET' });
 
-    const uploadResponse = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': file.type
-      },
-      body: file
-    });
+      if (!presignResponse.ok) throw new Error(`Status ${presignResponse.status}`);
 
-    if (!uploadResponse.ok) {
-      throw new Error(`Upload failed (${uploadResponse.status})`);
+      const { uploadUrl, s3Key } = await presignResponse.json();
+      if (!uploadUrl) throw new Error('Keine Upload-URL erhalten');
+
+      li.textContent = `${file.name} — ⏳ Wird hochgeladen...`;
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file
+      });
+
+      if (!uploadResponse.ok) throw new Error(`Upload Status ${uploadResponse.status}`);
+
+      li.textContent = `${file.name} — ✓`;
+      successCount++;
+    } catch (err) {
+      li.textContent = `${file.name} — ✗ ${err.message}`;
+      errorCount++;
     }
-
-    setStatus(`Upload von ${file.name} erfolgreich abgeschlossen.`, 'success');
-    console.log('Uploaded to S3 key:', s3Key);
-    fileInput.value = '';
-  } catch (err) {
-    console.error(err);
-    setStatus(`Upload fehlgeschlagen: ${err.message}`, 'error');
   }
+
+  statusSummary.textContent = `${successCount} erfolgreich, ${errorCount} fehlgeschlagen.`;
+  document.getElementById('status').dataset.state = errorCount === 0 ? 'success' : 'error';
+  fileInput.value = '';
 });
   </script>
 </body>
