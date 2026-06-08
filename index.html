@@ -137,7 +137,6 @@
     };
 
     const fileInput = document.getElementById('fileUpload');
-    const statusEl = document.getElementById('status');
     const themeToggle = document.querySelector('[data-theme-toggle]');
     let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', theme);
@@ -155,10 +154,6 @@
       renderThemeIcon();
     });
 
-    function setStatus(message, state = 'idle') {
-      statusEl.textContent = message;
-      statusEl.dataset.state = state;
-    }
 
 fileInput.addEventListener('change', async (event) => {
   const files = Array.from(event.target.files || []);
