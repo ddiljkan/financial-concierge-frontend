@@ -8,7 +8,7 @@ frontend:
         - export API_BASE_URL=$(aws ssm get-parameter --name "/fc/$ENVIRONMENT/api_endpoint" --region eu-central-1 --query "Parameter.Value" --output text)
         - echo "Generating config.js for environment $ENVIRONMENT..."
         - |
-          cat <<EOF > config.js
+          cat <<EOF > public/config.js
           window.APP_CONFIG = {
             API_BASE_URL: '${API_BASE_URL}',
             UPLOAD_PATH: '/api/upload-url',
@@ -18,10 +18,13 @@ frontend:
           EOF
     build:
       commands:
-        - echo "Frontend is ready for deployment"
+        - npm ci
+        - npm run build
+        - echo "Frontend build complete"
   artifacts:
-    baseDirectory: .
+    baseDirectory: dist
     files:
       - '**/*'
   cache:
-    paths: []
+    paths:
+      - node_modules/**/*
