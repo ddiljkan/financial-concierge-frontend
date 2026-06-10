@@ -1,42 +1,16 @@
-# Financial Concierge Website
+# React + Vite
 
-This package contains only the static website for deployment to Amazon S3 static hosting or AWS Amplify Hosting.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Files
-- `index.html` — complete static frontend
-- `config.js` — browser-readable configuration values
+Currently, two official plugins are available:
 
-## How configuration works
-The website loads values from `config.js` through `window.APP_CONFIG`.
-This is useful for values such as:
-- API Gateway base URL
-- upload route path
-- AWS region
-- app name
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Important
-Do not store secrets in `config.js`.
-Anything inside this file is public and visible in the browser.
-Only place non-sensitive frontend configuration there.
+## React Compiler
 
-## Example
-```js
-window.APP_CONFIG = {
-  API_BASE_URL: 'https://abc123.execute-api.eu-central-1.amazonaws.com',
-  UPLOAD_PATH: '/upload-url',
-  AWS_REGION: 'eu-central-1',
-  APP_NAME: 'Financial Concierge'
-};
-```
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Deployment
-### S3
-Upload both `index.html` and `config.js` to your website bucket.
+## Expanding the ESLint configuration
 
-### Amplify
-Commit both files to your frontend repository and deploy normally.
-
-## Current behavior
-- The page validates file types in the browser.
-- The page reads runtime-like configuration from `config.js`.
-- Once your Lambda/API is ready, update `config.js` and redeploy.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
