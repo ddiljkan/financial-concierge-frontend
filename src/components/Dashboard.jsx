@@ -191,15 +191,15 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
               <div className="flex min-w-[150px] grow flex-col gap-3">
                 <div className="flex items-center justify-between border-b border-[var(--color-divider)] pb-2">
                   <span className="text-[length:var(--text-xs)] text-[var(--color-text-muted)]">Ausgegeben</span>
-                  <strong className="text-[length:var(--text-sm)] font-semibold">{summaryData.totalSpent.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong>
+                  <strong className="text-[length:var(--text-sm)] font-semibold">{(summaryData.totalSpent || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong>
                 </div>
                 <div className="flex items-center justify-between border-b border-[var(--color-divider)] pb-2">
                   <span className="text-[length:var(--text-xs)] text-[var(--color-text-muted)]">Budget</span>
-                  <strong className="text-[length:var(--text-sm)] font-semibold">{summaryData.monthlyBudget.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong>
+                  <strong className="text-[length:var(--text-sm)] font-semibold">{(summaryData.monthlyBudget || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong>
                 </div>
                 <div className="flex items-center justify-between border-b border-[var(--color-divider)] pb-2">
                   <span className="text-[length:var(--text-xs)] text-[var(--color-text-muted)]">Verbleibend</span>
-                  <strong className="text-[length:var(--text-sm)] font-semibold">{summaryData.budgetRemaining.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong>
+                  <strong className="text-[length:var(--text-sm)] font-semibold">{(summaryData.budgetRemaining || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong>
                 </div>
               </div>
             </div>
