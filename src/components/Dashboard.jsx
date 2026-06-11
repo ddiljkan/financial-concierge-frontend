@@ -71,11 +71,25 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
       // Mock Fallbacks
       if (!newSummary) {
         let totalSpent = currentMonth === '2026-06' ? 1245.80 : currentMonth === '2026-05' ? 1150.20 : 980.50;
-        let categories = currentMonth === '2026-06' ? [
-          { category: "Lebensmittel", total: 540.0 }, { category: "Transport", total: 180.0 },
-          { category: "Gastronomie", total: 120.0 }, { category: "Freizeit & Unterhaltung", total: 95.0 },
-          { category: "Haushaltsbedarf", total: 80.0 }, { category: "Sonstiges", total: 230.80 }
-        ] : [];
+        let categories = [];
+        if (currentMonth === '2026-06') {
+          categories = [
+            { category: "Lebensmittel", total: 540.0 }, { category: "Transport", total: 180.0 },
+            { category: "Gastronomie", total: 120.0 }, { category: "Freizeit & Unterhaltung", total: 95.0 },
+            { category: "Haushaltsbedarf", total: 80.0 }, { category: "Sonstiges", total: 230.80 }
+          ];
+        } else if (currentMonth === '2026-05') {
+          categories = [
+            { category: "Lebensmittel", total: 510.0 }, { category: "Transport", total: 150.0 },
+            { category: "Gastronomie", total: 90.0 }, { category: "Sonstiges", total: 400.20 }
+          ];
+        } else {
+          // Fallback for April and others
+          categories = [
+            { category: "Lebensmittel", total: 450.0 }, { category: "Transport", total: 120.0 },
+            { category: "Gastronomie", total: 80.0 }, { category: "Sonstiges", total: 330.50 }
+          ];
+        }
         
         const localMonthlyBudget = localStorage.getItem('fc_monthly_budget');
         const monthlyBudget = localMonthlyBudget ? parseFloat(localMonthlyBudget) : 1500.0;
@@ -134,7 +148,7 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
   }
 
   const percent = Math.min(Math.round(summaryData.budgetUtilization), 100);
-  const circleColor = percent >= 100 ? '#dc2626' : (percent >= 85 ? '#d97706' : 'var(--color-primary)');
+  const circleColor = percent >= 100 ? '#ef4444' : (percent >= 85 ? '#f59e0b' : 'var(--color-primary)');
 
   return (
     <section className="py-8 pb-16" id="dashboard">
@@ -144,7 +158,7 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
             <span className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary-highlight)] px-3 py-2 text-[length:var(--text-xs)] font-bold uppercase tracking-[.08em] text-[var(--color-primary)]">Dashboard</span>
             <h2 className="mt-1 font-display text-[length:var(--text-lg)] font-bold">Monatsübersicht</h2>
           </div>
-          <div className="flex items-center gap-3 rounded-full border border-[color-mix(in_srgb,var(--color-text)_10%,transparent)] bg-[var(--color-surface)] px-4 py-2">
+          <div className="flex items-center gap-3 rounded-full px-4 py-2 glass">
             <button onClick={handlePrevMonth} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[color-mix(in_srgb,var(--color-text)_5%,transparent)]">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
@@ -159,7 +173,9 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
         </div>
 
         <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
-          <div className="flex flex-col gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--color-text)_10%,transparent)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] p-6 shadow-md">
+          <div className="flex flex-col gap-4 rounded-2xl p-6 shadow-2xl glass relative overflow-hidden">
+            {/* Soft inner glow */}
+            <div className="absolute -inset-1 rounded-[inherit] border border-white/5 pointer-events-none"></div>
             <h3 className="text-[length:var(--text-sm)] font-semibold uppercase tracking-[.08em] text-[var(--color-text-muted)]">Monatsbudget</h3>
             <div className="flex flex-wrap items-center justify-around gap-6">
               <div className="relative h-[140px] w-[140px]">
@@ -189,7 +205,9 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--color-text)_10%,transparent)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] p-6 shadow-md">
+          <div className="flex flex-col gap-4 rounded-2xl p-6 shadow-2xl glass relative overflow-hidden">
+            {/* Soft inner glow */}
+            <div className="absolute -inset-1 rounded-[inherit] border border-white/5 pointer-events-none"></div>
             <h3 className="text-[length:var(--text-sm)] font-semibold uppercase tracking-[.08em] text-[var(--color-text-muted)]">Kategorien</h3>
             <div className="flex max-h-[320px] flex-col gap-4 overflow-y-auto pr-2">
               {summaryData.categories && summaryData.categories.length > 0 ? (
@@ -219,7 +237,9 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--color-text)_10%,transparent)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] p-6 shadow-md">
+        <div className="mt-6 flex flex-col gap-4 rounded-2xl p-6 shadow-2xl glass relative overflow-hidden">
+          {/* Soft inner glow */}
+          <div className="absolute -inset-1 rounded-[inherit] border border-white/5 pointer-events-none"></div>
           <h3 className="text-[length:var(--text-sm)] font-semibold uppercase tracking-[.08em] text-[var(--color-text-muted)]">Ausgaben-Historie (3 Monate)</h3>
           <div className="relative flex h-[260px] items-end justify-around border-b border-[var(--color-border)] pb-4 pt-8">
             {historyData && historyData.history ? (
@@ -249,10 +269,10 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
                               <div className="relative min-h-[2px] w-[18px] rounded-t-sm transition-all duration-600 bg-[var(--color-primary)] group" style={{ height: `${(valLeb / maxVal) * 100}%` }}>
                                 <div className="absolute bottom-full left-1/2 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded bg-[var(--color-text)] px-2 py-1 text-[length:var(--text-xs)] text-[var(--color-bg)] shadow-sm group-hover:block z-10">Lebensmittel: {valLeb} EUR</div>
                               </div>
-                              <div className="relative min-h-[2px] w-[18px] rounded-t-sm transition-all duration-600 bg-[#38bdf8] group" style={{ height: `${(valTra / maxVal) * 100}%` }}>
+                              <div className="relative min-h-[2px] w-[18px] rounded-t-sm transition-all duration-600 bg-[#14b8a6] group" style={{ height: `${(valTra / maxVal) * 100}%` }}>
                                 <div className="absolute bottom-full left-1/2 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded bg-[var(--color-text)] px-2 py-1 text-[length:var(--text-xs)] text-[var(--color-bg)] shadow-sm group-hover:block z-10">Transport: {valTra} EUR</div>
                               </div>
-                              <div className="relative min-h-[2px] w-[18px] rounded-t-sm transition-all duration-600 bg-[#f59e0b] group" style={{ height: `${(valGas / maxVal) * 100}%` }}>
+                              <div className="relative min-h-[2px] w-[18px] rounded-t-sm transition-all duration-600 bg-[#ef4444] group" style={{ height: `${(valGas / maxVal) * 100}%` }}>
                                 <div className="absolute bottom-full left-1/2 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded bg-[var(--color-text)] px-2 py-1 text-[length:var(--text-xs)] text-[var(--color-bg)] shadow-sm group-hover:block z-10">Gastronomie: {valGas} EUR</div>
                               </div>
                             </div>
@@ -264,8 +284,8 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
                   </div>
                   <div className="mt-4 flex flex-wrap justify-center gap-4">
                     <div className="flex items-center gap-2 text-[length:var(--text-xs)] text-[var(--color-text-muted)]"><div className="h-3 w-3 rounded-sm bg-[var(--color-primary)]"></div><span>Lebensmittel</span></div>
-                    <div className="flex items-center gap-2 text-[length:var(--text-xs)] text-[var(--color-text-muted)]"><div className="h-3 w-3 rounded-sm bg-[#38bdf8]"></div><span>Transport</span></div>
-                    <div className="flex items-center gap-2 text-[length:var(--text-xs)] text-[var(--color-text-muted)]"><div className="h-3 w-3 rounded-sm bg-[#f59e0b]"></div><span>Gastronomie</span></div>
+                    <div className="flex items-center gap-2 text-[length:var(--text-xs)] text-[var(--color-text-muted)]"><div className="h-3 w-3 rounded-sm bg-[#14b8a6]"></div><span>Transport</span></div>
+                    <div className="flex items-center gap-2 text-[length:var(--text-xs)] text-[var(--color-text-muted)]"><div className="h-3 w-3 rounded-sm bg-[#ef4444]"></div><span>Gastronomie</span></div>
                   </div>
                 </div>
               </>
