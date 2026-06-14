@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export function UploadBox({ onUploadSuccess }) {
+export function UploadBox({ onUploadSuccess, isProfileComplete, onOpenSettings }) {
   const [files, setFiles] = useState([]);
   const [status, setStatus] = useState('idle'); // idle, uploading, success, error
   const [summary, setSummary] = useState('No file selected yet.');
@@ -99,10 +99,17 @@ export function UploadBox({ onUploadSuccess }) {
       <span className="mt-2 block font-medium">{summary}</span>
       <div className="mt-4">
          <label
-          htmlFor="fileUpload"
-          className="inline-flex min-h-[40px] cursor-pointer items-center justify-center rounded-full bg-[var(--color-primary)] px-4 text-xs font-semibold text-[var(--color-text-inverse)] shadow-md transition hover:bg-[var(--color-primary-hover)]"
+          htmlFor={isProfileComplete ? "fileUpload" : undefined}
+          onClick={(e) => {
+            if (!isProfileComplete) {
+              e.preventDefault();
+              alert("Bitte fülle zuerst dein Steuer-Profil aus, damit die KI deine Belege korrekt einschätzen kann!");
+              if (onOpenSettings) onOpenSettings();
+            }
+          }}
+          className={`inline-flex min-h-[40px] cursor-pointer items-center justify-center rounded-full px-4 text-xs font-semibold text-[var(--color-text-inverse)] shadow-md transition ${isProfileComplete ? 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]' : 'bg-[var(--color-text-muted)] cursor-not-allowed'}`}
         >
-          Weitere Dateien wählen
+          {isProfileComplete ? 'Dateien wählen' : 'Steuer-Profil ausfüllen'}
         </label>
         <input
           id="fileUpload"
@@ -111,6 +118,7 @@ export function UploadBox({ onUploadSuccess }) {
           accept=".pdf,.png,.jpg,.jpeg,image/png,image/jpeg,application/pdf"
           multiple
           onChange={handleFileChange}
+          disabled={!isProfileComplete}
         />
       </div>
     </div>

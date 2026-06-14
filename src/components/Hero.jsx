@@ -1,7 +1,7 @@
 import React from 'react';
 import { UploadBox } from './UploadBox';
 
-export function Hero({ onUploadSuccess }) {
+export function Hero({ onUploadSuccess, isProfileComplete, onOpenSettings }) {
   return (
     <section className="mb-8">
       <div className="rounded-2xl p-6 shadow-2xl glass relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
@@ -20,7 +20,11 @@ export function Hero({ onUploadSuccess }) {
         
         <div className="w-full md:w-[400px]">
           <div className="rounded-xl border-2 border-dashed border-[color-mix(in_srgb,var(--color-primary)_35%,var(--color-border))] bg-gradient-to-b from-[color-mix(in_srgb,var(--color-primary)_6%,transparent)] to-transparent p-6 text-center">
-            <UploadBox onUploadSuccess={onUploadSuccess} />
+            <UploadBox 
+              onUploadSuccess={onUploadSuccess} 
+              isProfileComplete={isProfileComplete}
+              onOpenSettings={onOpenSettings}
+            />
           </div>
         </div>
       </div>

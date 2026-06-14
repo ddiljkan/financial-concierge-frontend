@@ -9,6 +9,7 @@ function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [currentMonth, setCurrentMonth] = useState('');
   const [currentSection, setCurrentSection] = useState('dashboard');
+  const [isProfileComplete, setIsProfileComplete] = useState(false);
 
   useEffect(() => {
     // Initialisiere currentMonth mit dem aktuellen Monat
@@ -16,6 +17,9 @@ function App() {
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     setCurrentMonth('2026-06');
+    
+    // Check if profile is complete
+    setIsProfileComplete(!!localStorage.getItem('fc_profession'));
   }, []);
 
   const handleUploadSuccess = () => {
@@ -23,6 +27,7 @@ function App() {
   };
 
   const handleSettingsSave = () => {
+    setIsProfileComplete(!!localStorage.getItem('fc_profession'));
     setRefreshTrigger(prev => prev + 1);
   };
 
@@ -70,7 +75,11 @@ function App() {
               {/* Optional Hero/UploadBox logic can go here or inside dashboard */}
               {/* We keep Hero for now as per original layout */}
               <div className="mb-8">
-                 <Hero onUploadSuccess={handleUploadSuccess} />
+                 <Hero 
+                    onUploadSuccess={handleUploadSuccess} 
+                    isProfileComplete={isProfileComplete}
+                    onOpenSettings={() => setIsSettingsOpen(true)}
+                 />
               </div>
               
               {currentMonth && (
