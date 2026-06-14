@@ -14,6 +14,11 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
   const [employmentType, setEmploymentType] = useState('Angestellt');
   const [country, setCountry] = useState('Österreich');
   const [homeOffice, setHomeOffice] = useState(false);
+  const [isStudent, setIsStudent] = useState(false);
+  const [hasSeparateWorkspace, setHasSeparateWorkspace] = useState(false);
+  const [isSmallBusiness, setIsSmallBusiness] = useState(false);
+  const [commutesToWork, setCommutesToWork] = useState(false);
+  const [hasChildren, setHasChildren] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -36,6 +41,11 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
               setEmploymentType(data.employmentType || 'Angestellt');
               setCountry(data.country || 'Österreich');
               setHomeOffice(data.homeOffice || false);
+              setIsStudent(data.isStudent || false);
+              setHasSeparateWorkspace(data.hasSeparateWorkspace || false);
+              setIsSmallBusiness(data.isSmallBusiness || false);
+              setCommutesToWork(data.commutesToWork || false);
+              setHasChildren(data.hasChildren || false);
             }
           } catch(e) { console.error("Failed to fetch profile", e); }
         } else {
@@ -44,6 +54,11 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
             setEmploymentType(localStorage.getItem('fc_employment') || 'Angestellt');
             setCountry(localStorage.getItem('fc_country') || 'Österreich');
             setHomeOffice(localStorage.getItem('fc_home_office') === 'true');
+            setIsStudent(localStorage.getItem('fc_is_student') === 'true');
+            setHasSeparateWorkspace(localStorage.getItem('fc_has_sep_workspace') === 'true');
+            setIsSmallBusiness(localStorage.getItem('fc_is_small_business') === 'true');
+            setCommutesToWork(localStorage.getItem('fc_commutes') === 'true');
+            setHasChildren(localStorage.getItem('fc_has_children') === 'true');
         }
       };
       fetchProfile();
@@ -86,6 +101,10 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
         await fetch(`${config.apiBaseUrl}/api/profile`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            profession, employmentType, country, homeOffice, isStudent,
+            hasSeparateWorkspace, isSmallBusiness, commutesToWork, hasChildren
+          })
           body: JSON.stringify({ profession, employmentType, country, homeOffice })
         });
       } catch (e) {
@@ -98,6 +117,11 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
     localStorage.setItem('fc_employment', employmentType);
     localStorage.setItem('fc_country', country);
     localStorage.setItem('fc_home_office', homeOffice.toString());
+    localStorage.setItem('fc_is_student', isStudent.toString());
+    localStorage.setItem('fc_has_sep_workspace', hasSeparateWorkspace.toString());
+    localStorage.setItem('fc_is_small_business', isSmallBusiness.toString());
+    localStorage.setItem('fc_commutes', commutesToWork.toString());
+    localStorage.setItem('fc_has_children', hasChildren.toString());
 
     localStorage.setItem('fc_monthly_budget', finalMonthlyBudget);
     localStorage.setItem('fc_category_budgets', JSON.stringify(finalCategoryBudgets));
@@ -167,6 +191,73 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
                     className="h-5 w-5 rounded border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:ring-offset-[var(--color-bg)]"
                     checked={homeOffice}
                     onChange={(e) => setHomeOffice(e.target.checked)}
+                  />
+                </label>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-[var(--color-text-muted)] flex items-center justify-between">
+                  Separates Arbeitszimmer
+                  <span className="group relative cursor-help text-[var(--color-primary)]" title="Ein separates, abschließbares Zimmer, das ausschließlich (zu >90%) beruflich genutzt wird. Eine Arbeitsecke im Wohnzimmer zählt nicht!">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  </span>
+                </label>
+                <label className="flex min-h-[40px] w-full cursor-pointer items-center justify-between rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm transition hover:border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)]">
+                  <span>Ausschließlich beruflich genutzt?</span>
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5 rounded border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:ring-offset-[var(--color-bg)]"
+                    checked={hasSeparateWorkspace}
+                    onChange={(e) => setHasSeparateWorkspace(e.target.checked)}
+                  />
+                </label>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-[var(--color-text-muted)]">Pendler</label>
+                <label className="flex min-h-[40px] w-full cursor-pointer items-center justify-between rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm transition hover:border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)]">
+                  <span>Regelmäßiger Fahrtweg?</span>
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5 rounded border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:ring-offset-[var(--color-bg)]"
+                    checked={commutesToWork}
+                    onChange={(e) => setCommutesToWork(e.target.checked)}
+                  />
+                </label>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-[var(--color-text-muted)]">Kinder</label>
+                <label className="flex min-h-[40px] w-full cursor-pointer items-center justify-between rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm transition hover:border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)]">
+                  <span>Kinder im Haushalt?</span>
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5 rounded border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:ring-offset-[var(--color-bg)]"
+                    checked={hasChildren}
+                    onChange={(e) => setHasChildren(e.target.checked)}
+                  />
+                </label>
+              </div>
+              {employmentType !== 'Angestellt' && (
+                <div className="flex flex-col gap-2">
+                  <label className="text-[11px] font-semibold text-[var(--color-text-muted)]">Kleinunternehmer</label>
+                  <label className="flex min-h-[40px] w-full cursor-pointer items-center justify-between rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm transition hover:border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)]">
+                    <span>Kein Vorsteuerabzug?</span>
+                    <input
+                      type="checkbox"
+                      className="h-5 w-5 rounded border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:ring-offset-[var(--color-bg)]"
+                      checked={isSmallBusiness}
+                      onChange={(e) => setIsSmallBusiness(e.target.checked)}
+                    />
+                  </label>
+                </div>
+              )}
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-[var(--color-text-muted)]">Studium</label>
+                <label className="flex min-h-[40px] w-full cursor-pointer items-center justify-between rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm transition hover:border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)]">
+                  <span>Bin ich Student/in?</span>
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5 rounded border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:ring-offset-[var(--color-bg)]"
+                    checked={isStudent}
+                    onChange={(e) => setIsStudent(e.target.checked)}
                   />
                 </label>
               </div>

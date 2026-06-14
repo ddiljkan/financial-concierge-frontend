@@ -48,6 +48,7 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
   const [loading, setLoading] = useState(true);
   const [refreshLocal, setRefreshLocal] = useState(0);
   const [isSavingUsage, setIsSavingUsage] = useState(false);
+  const [usagePurpose, setUsagePurpose] = useState("100% beruflich");
 
   useEffect(() => {
     async function fetchData() {
@@ -369,14 +370,32 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
               <br/><br/>
               <span className="text-amber-500">KI-Hinweis:</span> {selectedExpense.taxReasoning || "Bitte gib an, wofür dieser Betrag ausgegeben wurde."}
             </p>
-            <textarea 
-              className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-transparent focus:outline-2 focus:outline-[var(--color-primary)] mb-4"
-              rows="3"
-              placeholder="z.B. Zu 100% geschäftlich genutzt für Home Office"
-              id="usagePurposeInput"
-            ></textarea>
+            <div className="flex flex-col gap-3 mb-6">
+              {[
+                "100% beruflich",
+                "Überwiegend beruflich",
+                "Geringfügig beruflich",
+                "Rein privat"
+              ].map((option) => (
+                <label key={option} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors">
+                  <input 
+                    type="radio" 
+                    name="usagePurpose" 
+                    value={option} 
+                    checked={usagePurpose === option}
+                    onChange={(e) => setUsagePurpose(e.target.value)}
+                    className="w-4 h-4 text-[var(--color-primary)] focus:ring-[var(--color-primary)] border-gray-300"
+                  />
+                  <span className="text-sm font-medium">{option}</span>
+                </label>
+              ))}
+            </div>
             <div className="flex justify-end gap-3">
               <button 
+                onClick={() => {
+                  setSelectedExpense(null);
+                  setUsagePurpose("100% beruflich");
+                }} 
                 onClick={() => setSelectedExpense(null)} 
                 disabled={isSavingUsage}
                 className="rounded-full border border-[color-mix(in_srgb,var(--color-text)_12%,transparent)] px-4 py-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] disabled:opacity-50"
@@ -385,6 +404,7 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
               </button>
               <button 
                 onClick={async () => {
+                  if (!usagePurpose) return;
                   const inputVal = document.getElementById("usagePurposeInput").value;
                   if (!inputVal) return;
                   
@@ -403,6 +423,7 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             SK: selectedExpense.SK,
+                            usagePurpose: usagePurpose
                             usagePurpose: inputVal
                         })
                     });
@@ -412,6 +433,7 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
                     // Reload table
                     setRefreshLocal(prev => prev + 1);
                     setSelectedExpense(null);
+                    setUsagePurpose("100% beruflich");
                   } catch (e) {
                     console.error("Save usage error:", e);
                     alert("Konnte Verwendungszweck nicht speichern.");
