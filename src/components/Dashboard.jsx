@@ -333,7 +333,7 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
               <tbody className="divide-y divide-[var(--color-divider)]">
                 {expenses.length > 0 ? expenses.map(exp => (
                   <tr key={exp.expenseId} className="hover:bg-[color-mix(in_srgb,var(--color-text)_2%,transparent)]">
-                    <td className="py-3 pr-4 whitespace-nowrap">{new Date(exp.createdAt).toLocaleDateString('de-DE')}</td>
+                    <td className="py-3 pr-4 whitespace-nowrap">{new Date(exp.receiptDate || exp.createdAt).toLocaleDateString('de-DE')}</td>
                     <td className="py-3 pr-4">
                       <div className="font-medium">{exp.vendor}</div>
                       <div className="text-xs text-[var(--color-text-muted)]">{exp.description}</div>
@@ -342,6 +342,7 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
                     <td className="py-3 pr-4"><span className="inline-flex items-center gap-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-text)_5%,transparent)] px-2 py-0.5 text-xs">{CATEGORY_ICONS[exp.category] || "📦"} {exp.category}</span></td>
                     <td className="py-3 text-right">
                       {exp.taxDeductibility === 'HIGH_PROBABILITY' && <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-500" title={exp.taxReasoning}>Absetzbar ({exp.taxPercentage}%)</span>}
+                      {exp.taxDeductibility === 'PARTIAL' && <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2 py-0.5 text-xs font-semibold text-blue-500" title={exp.taxReasoning}>Teilweise ({exp.taxPercentage}%)</span>}
                       {exp.taxDeductibility === 'NOT_DEDUCTIBLE' && <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-semibold text-red-500" title={exp.taxReasoning}>Nicht absetzbar</span>}
                       {exp.taxDeductibility === 'NEEDS_INFO' && <button onClick={() => setSelectedExpense(exp)} className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-500 hover:bg-amber-500/20 transition shadow-sm">Info benötigt</button>}
                       {!exp.taxDeductibility && <span className="text-[var(--color-text-faint)] text-xs">-</span>}
