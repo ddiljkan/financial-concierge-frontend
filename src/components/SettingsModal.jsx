@@ -13,6 +13,7 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
   const [profession, setProfession] = useState('');
   const [employmentType, setEmploymentType] = useState('Angestellt');
   const [country, setCountry] = useState('Österreich');
+  const [homeOffice, setHomeOffice] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
               setProfession(data.profession || '');
               setEmploymentType(data.employmentType || 'Angestellt');
               setCountry(data.country || 'Österreich');
+              setHomeOffice(data.homeOffice || false);
             }
           } catch(e) { console.error("Failed to fetch profile", e); }
         } else {
@@ -41,6 +43,7 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
             setProfession(localStorage.getItem('fc_profession') || '');
             setEmploymentType(localStorage.getItem('fc_employment') || 'Angestellt');
             setCountry(localStorage.getItem('fc_country') || 'Österreich');
+            setHomeOffice(localStorage.getItem('fc_home_office') === 'true');
         }
       };
       fetchProfile();
@@ -83,7 +86,7 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
         await fetch(`${config.apiBaseUrl}/api/profile`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ profession, employmentType, country })
+          body: JSON.stringify({ profession, employmentType, country, homeOffice })
         });
       } catch (e) {
         console.error("Failed to save to API, saving locally", e);
@@ -94,6 +97,7 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
     localStorage.setItem('fc_profession', profession);
     localStorage.setItem('fc_employment', employmentType);
     localStorage.setItem('fc_country', country);
+    localStorage.setItem('fc_home_office', homeOffice.toString());
 
     localStorage.setItem('fc_monthly_budget', finalMonthlyBudget);
     localStorage.setItem('fc_category_budgets', JSON.stringify(finalCategoryBudgets));
@@ -153,6 +157,18 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
                   <option value="Deutschland">Deutschland</option>
                   <option value="Schweiz">Schweiz</option>
                 </select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-[var(--color-text-muted)]">Home-Office</label>
+                <label className="flex min-h-[40px] w-full cursor-pointer items-center justify-between rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm transition hover:border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)]">
+                  <span>Mache ich Home-Office?</span>
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5 rounded border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:ring-offset-[var(--color-bg)]"
+                    checked={homeOffice}
+                    onChange={(e) => setHomeOffice(e.target.checked)}
+                  />
+                </label>
               </div>
             </div>
           </div>
