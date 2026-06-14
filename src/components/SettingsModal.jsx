@@ -105,6 +105,7 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
             profession, employmentType, country, homeOffice, isStudent,
             hasSeparateWorkspace, isSmallBusiness, commutesToWork, hasChildren
           })
+          body: JSON.stringify({ profession, employmentType, country, homeOffice })
         });
       } catch (e) {
         console.error("Failed to save to API, saving locally", e);

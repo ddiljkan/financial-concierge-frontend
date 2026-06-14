@@ -396,6 +396,7 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
                   setSelectedExpense(null);
                   setUsagePurpose("100% beruflich");
                 }} 
+                onClick={() => setSelectedExpense(null)} 
                 disabled={isSavingUsage}
                 className="rounded-full border border-[color-mix(in_srgb,var(--color-text)_12%,transparent)] px-4 py-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] disabled:opacity-50"
               >
@@ -404,6 +405,8 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
               <button 
                 onClick={async () => {
                   if (!usagePurpose) return;
+                  const inputVal = document.getElementById("usagePurposeInput").value;
+                  if (!inputVal) return;
                   
                   setIsSavingUsage(true);
                   try {
@@ -421,6 +424,7 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
                         body: JSON.stringify({
                             SK: selectedExpense.SK,
                             usagePurpose: usagePurpose
+                            usagePurpose: inputVal
                         })
                     });
                     
