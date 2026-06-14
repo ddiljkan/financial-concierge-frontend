@@ -10,6 +10,9 @@ const CATEGORIES_LIST = [
 export function SettingsModal({ isOpen, onClose, onSave }) {
   const [monthlyBudget, setMonthlyBudget] = useState(1500);
   const [categoryBudgets, setCategoryBudgets] = useState({});
+  const [profession, setProfession] = useState('');
+  const [employmentType, setEmploymentType] = useState('Angestellt');
+  const [country, setCountry] = useState('Österreich');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -19,6 +22,28 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
       
       setMonthlyBudget(localMonthlyBudget ? parseFloat(localMonthlyBudget) : 1500);
       setCategoryBudgets(localBudgets ? JSON.parse(localBudgets) : {});
+
+      // Load profile from API
+      const fetchProfile = async () => {
+        const config = { apiBaseUrl: window.APP_CONFIG?.API_BASE_URL || '' };
+        if (config.apiBaseUrl && !config.apiBaseUrl.includes('REPLACE_WITH_API_ID')) {
+          try {
+            const resp = await fetch(`${config.apiBaseUrl}/api/profile`);
+            if (resp.ok) {
+              const data = await resp.json();
+              setProfession(data.profession || '');
+              setEmploymentType(data.employmentType || 'Angestellt');
+              setCountry(data.country || 'Österreich');
+            }
+          } catch(e) { console.error("Failed to fetch profile", e); }
+        } else {
+            // Local fallback
+            setProfession(localStorage.getItem('fc_profession') || '');
+            setEmploymentType(localStorage.getItem('fc_employment') || 'Angestellt');
+            setCountry(localStorage.getItem('fc_country') || 'Österreich');
+        }
+      };
+      fetchProfile();
     }
   }, [isOpen]);
 
@@ -53,11 +78,22 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
         const result = await resp.json();
         finalMonthlyBudget = result.monthlyBudget;
         finalCategoryBudgets = result.categoryBudgets;
+
+        // Save Profile
+        await fetch(`${config.apiBaseUrl}/api/profile`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profession, employmentType, country })
+        });
       } catch (e) {
-        console.error("Failed to save budgets to API, saving locally", e);
+        console.error("Failed to save to API, saving locally", e);
         alert("Fehler beim Speichern in der Cloud. Werte wurden lokal im Browser gesichert.");
       }
     }
+
+    localStorage.setItem('fc_profession', profession);
+    localStorage.setItem('fc_employment', employmentType);
+    localStorage.setItem('fc_country', country);
 
     localStorage.setItem('fc_monthly_budget', finalMonthlyBudget);
     localStorage.setItem('fc_category_budgets', JSON.stringify(finalCategoryBudgets));
@@ -73,14 +109,57 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
     <div className="fixed inset-0 z-[100] grid place-items-center bg-black/50 opacity-100 backdrop-blur-sm transition-opacity duration-180">
       <div className="flex max-h-[85dvh] w-[min(500px,calc(100%-2rem))] flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl">
         <div className="flex items-center justify-between border-b border-[var(--color-divider)] px-6 py-4">
-          <h3 className="font-display text-lg font-bold">Budgets verwalten</h3>
+          <h3 className="font-display text-lg font-bold">Einstellungen</h3>
           <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-full text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--color-text)_8%,transparent)] hover:text-[var(--color-text)]">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
-        <div className="flex flex-col gap-4 overflow-y-auto px-6 py-6">
+        <div className="flex flex-col gap-6 overflow-y-auto px-6 py-6">
+          
+          <div className="flex flex-col gap-4 border-b border-[var(--color-divider)] pb-6">
+            <h4 className="text-xs font-semibold uppercase tracking-[.08em] text-[var(--color-text-muted)]">Steuer-Profil (KI-Kontext)</h4>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-[var(--color-text-muted)]">Beruf / Tätigkeit</label>
+                <input
+                  type="text"
+                  className="min-h-[40px] w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-transparent focus:outline-2 focus:outline-[var(--color-primary)]"
+                  placeholder="z.B. Softwareentwickler"
+                  value={profession}
+                  onChange={(e) => setProfession(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-[var(--color-text-muted)]">Anstellungsart</label>
+                <select
+                  className="min-h-[40px] w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-transparent focus:outline-2 focus:outline-[var(--color-primary)]"
+                  value={employmentType}
+                  onChange={(e) => setEmploymentType(e.target.value)}
+                >
+                  <option value="Angestellt">Angestellt</option>
+                  <option value="Selbstständig">Selbstständig</option>
+                  <option value="GmbH">GmbH</option>
+                  <option value="Sonstiges">Sonstiges</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-[var(--color-text-muted)]">Land</label>
+                <select
+                  className="min-h-[40px] w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-transparent focus:outline-2 focus:outline-[var(--color-primary)]"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                >
+                  <option value="Österreich">Österreich</option>
+                  <option value="Deutschland">Deutschland</option>
+                  <option value="Schweiz">Schweiz</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-2">
-            <label htmlFor="inputMonthlyBudget" className="text-xs font-semibold uppercase tracking-[.08em] text-[var(--color-text-muted)]">Gesamtes Monatsbudget (EUR)</label>
+            <h4 className="text-xs font-semibold uppercase tracking-[.08em] text-[var(--color-text-muted)]">Budgets</h4>
+            <label htmlFor="inputMonthlyBudget" className="mt-2 text-[11px] font-semibold text-[var(--color-text-muted)]">Gesamtes Monatsbudget (EUR)</label>
             <input
               type="number"
               id="inputMonthlyBudget"

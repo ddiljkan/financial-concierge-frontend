@@ -43,6 +43,8 @@ const formatMonthShort = (monthStr) => {
 export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refreshTrigger }) {
   const [summaryData, setSummaryData] = useState(null);
   const [historyData, setHistoryData] = useState(null);
+  const [expenses, setExpenses] = useState([]);
+  const [selectedExpense, setSelectedExpense] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -55,8 +57,16 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
       
       let newSummary = null;
       let newHistory = null;
+      let newExpenses = [];
 
       if (isConfigured) {
+        try {
+          const expensesResp = await fetch(`${config.apiBaseUrl}/api/expenses?month=${currentMonth}`);
+          if (expensesResp.ok) {
+            const data = await expensesResp.json();
+            newExpenses = data.expenses || [];
+          }
+        } catch (e) { console.warn("Failed to fetch expenses", e); }
         try {
           const summaryResp = await fetch(`${config.apiBaseUrl}/api/expenses/summary?month=${currentMonth}`);
           if (summaryResp.ok) newSummary = await summaryResp.json();
@@ -119,8 +129,17 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
         };
       }
       
+      if (!isConfigured && newExpenses.length === 0) {
+         newExpenses = [
+             { expenseId: '1', vendor: 'MediaMarkt', description: 'Laptop', category: 'Elektronik', amount: 1200.0, createdAt: '2026-06-10T14:30:00Z', taxDeductibility: 'HIGH_PROBABILITY', taxPercentage: 100, taxReasoning: 'Berufliche Nutzung als Entwickler.' },
+             { expenseId: '2', vendor: 'Amazon', description: 'Bürostuhl', category: 'Wohnen & Einrichtung', amount: 350.0, createdAt: '2026-06-12T09:15:00Z', taxDeductibility: 'NEEDS_INFO', taxPercentage: 0, taxReasoning: 'Ist der Stuhl fürs Home-Office oder privat?' },
+             { expenseId: '3', vendor: 'Netflix', description: 'Abo', category: 'Freizeit & Unterhaltung', amount: 15.0, createdAt: '2026-06-01T08:00:00Z', taxDeductibility: 'NOT_DEDUCTIBLE', taxPercentage: 0, taxReasoning: 'Privates Abo.' }
+         ];
+      }
+      
       setSummaryData(newSummary);
       setHistoryData(newHistory);
+      setExpenses(newExpenses);
       setLoading(false);
     }
     
@@ -294,7 +313,75 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
             )}
           </div>
         </div>
+
+        {/* Letzte Ausgaben Tabelle */}
+        <div className="mt-6 flex flex-col gap-4 rounded-2xl p-6 shadow-2xl glass relative overflow-hidden">
+          <div className="absolute -inset-1 rounded-[inherit] border border-white/5 pointer-events-none"></div>
+          <h3 className="text-[length:var(--text-sm)] font-semibold uppercase tracking-[.08em] text-[var(--color-text-muted)]">Letzte Ausgaben</h3>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-[var(--color-divider)] text-[var(--color-text-muted)]">
+                <tr>
+                  <th className="pb-3 font-semibold">Datum</th>
+                  <th className="pb-3 font-semibold">Anbieter</th>
+                  <th className="pb-3 font-semibold">Betrag</th>
+                  <th className="pb-3 font-semibold">Kategorie</th>
+                  <th className="pb-3 font-semibold text-right">Steuer-Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-divider)]">
+                {expenses.length > 0 ? expenses.map(exp => (
+                  <tr key={exp.expenseId} className="hover:bg-[color-mix(in_srgb,var(--color-text)_2%,transparent)]">
+                    <td className="py-3 pr-4 whitespace-nowrap">{new Date(exp.createdAt).toLocaleDateString('de-DE')}</td>
+                    <td className="py-3 pr-4">
+                      <div className="font-medium">{exp.vendor}</div>
+                      <div className="text-xs text-[var(--color-text-muted)]">{exp.description}</div>
+                    </td>
+                    <td className="py-3 pr-4 font-semibold">{exp.amount.toLocaleString('de-DE', {style: 'currency', currency: 'EUR'})}</td>
+                    <td className="py-3 pr-4"><span className="inline-flex items-center gap-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-text)_5%,transparent)] px-2 py-0.5 text-xs">{CATEGORY_ICONS[exp.category] || "📦"} {exp.category}</span></td>
+                    <td className="py-3 text-right">
+                      {exp.taxDeductibility === 'HIGH_PROBABILITY' && <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-500" title={exp.taxReasoning}>Absetzbar ({exp.taxPercentage}%)</span>}
+                      {exp.taxDeductibility === 'NOT_DEDUCTIBLE' && <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-semibold text-red-500" title={exp.taxReasoning}>Nicht absetzbar</span>}
+                      {exp.taxDeductibility === 'NEEDS_INFO' && <button onClick={() => setSelectedExpense(exp)} className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-500 hover:bg-amber-500/20 transition shadow-sm">Info benötigt</button>}
+                      {!exp.taxDeductibility && <span className="text-[var(--color-text-faint)] text-xs">-</span>}
+                    </td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan="5" className="py-8 text-center text-[var(--color-text-faint)]">Keine Ausgaben in diesem Monat gefunden</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
+
+      {/* Needs Info Modal */}
+      {selectedExpense && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-black/50 opacity-100 backdrop-blur-sm">
+          <div className="w-[min(400px,calc(100%-2rem))] flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl p-6">
+            <h3 className="font-display text-lg font-bold mb-2">Verwendungszweck angeben</h3>
+            <p className="text-sm text-[var(--color-text-muted)] mb-4">
+              <strong>{selectedExpense.vendor}</strong> ({selectedExpense.amount.toLocaleString('de-DE', {style: 'currency', currency: 'EUR'})})
+              <br/><br/>
+              <span className="text-amber-500">KI-Hinweis:</span> {selectedExpense.taxReasoning || "Bitte gib an, wofür dieser Betrag ausgegeben wurde."}
+            </p>
+            <textarea 
+              className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-transparent focus:outline-2 focus:outline-[var(--color-primary)] mb-4"
+              rows="3"
+              placeholder="z.B. Zu 100% geschäftlich genutzt für Home Office"
+              id="usagePurposeInput"
+            ></textarea>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setSelectedExpense(null)} className="rounded-full border border-[color-mix(in_srgb,var(--color-text)_12%,transparent)] px-4 py-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)]">Abbrechen</button>
+              <button onClick={() => {
+                alert("Wird im nächsten Schritt an die API gesendet!");
+                setSelectedExpense(null);
+              }} className="rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-text-inverse)] hover:bg-[var(--color-primary-hover)]">Speichern</button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import logo from '../assets/Logo-FinCon.png';
 
 export function Header({ onOpenSettings }) {
   const [theme, setTheme] = useState('light');
@@ -23,11 +24,7 @@ export function Header({ onOpenSettings }) {
     <header className="sticky top-0 z-10 border-b border-[color-mix(in_srgb,var(--color-text)_10%,transparent)] bg-[color-mix(in_srgb,var(--color-bg)_88%,transparent)] backdrop-blur-[14px]">
       <div className="container mx-auto flex w-[min(1120px,calc(100%-2rem))] items-center justify-between py-4">
         <div className="flex items-center gap-3 text-sm font-bold tracking-[.02em]">
-          <div className="flex h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-gradient-to-br from-[var(--color-primary-highlight)] to-[var(--color-surface-2)] p-2 text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
-          </div>
+          <img src={logo} alt="Financial Concierge Logo" className="h-10 w-auto object-contain" />
           <span className="hidden sm:inline">Financial Concierge</span>
         </div>
 

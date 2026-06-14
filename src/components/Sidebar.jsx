@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from '../assets/Logo-FinCon.png';
 
 export function Sidebar({ currentSection, onNavigate, user }) {
   const navItems = [
@@ -13,11 +14,7 @@ export function Sidebar({ currentSection, onNavigate, user }) {
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-[var(--color-border)] glass">
       {/* Brand */}
       <div className="flex h-20 items-center gap-3 px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-primary)] text-white">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-          </svg>
-        </div>
+        <img src={logo} alt="Financial Concierge Logo" className="h-8 w-auto object-contain" />
         <span className="font-display text-lg font-bold tracking-tight text-white">
           Financial Concierge
         </span>
