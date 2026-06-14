@@ -46,6 +46,8 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
   const [expenses, setExpenses] = useState([]);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshLocal, setRefreshLocal] = useState(0);
+  const [isSavingUsage, setIsSavingUsage] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -144,7 +146,7 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
     }
     
     fetchData();
-  }, [currentMonth, refreshTrigger]);
+  }, [currentMonth, refreshTrigger, refreshLocal]);
 
   const handlePrevMonth = () => {
     const [year, month] = currentMonth.split('-').map(Number);
@@ -374,11 +376,59 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
               id="usagePurposeInput"
             ></textarea>
             <div className="flex justify-end gap-3">
-              <button onClick={() => setSelectedExpense(null)} className="rounded-full border border-[color-mix(in_srgb,var(--color-text)_12%,transparent)] px-4 py-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)]">Abbrechen</button>
-              <button onClick={() => {
-                alert("Wird im nächsten Schritt an die API gesendet!");
-                setSelectedExpense(null);
-              }} className="rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-text-inverse)] hover:bg-[var(--color-primary-hover)]">Speichern</button>
+              <button 
+                onClick={() => setSelectedExpense(null)} 
+                disabled={isSavingUsage}
+                className="rounded-full border border-[color-mix(in_srgb,var(--color-text)_12%,transparent)] px-4 py-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] disabled:opacity-50"
+              >
+                Abbrechen
+              </button>
+              <button 
+                onClick={async () => {
+                  const inputVal = document.getElementById("usagePurposeInput").value;
+                  if (!inputVal) return;
+                  
+                  setIsSavingUsage(true);
+                  try {
+                    const config = { apiBaseUrl: window.APP_CONFIG?.API_BASE_URL || '' };
+                    if (!config.apiBaseUrl || config.apiBaseUrl.includes('REPLACE_WITH_API_ID')) {
+                        // Dev / Local fallback
+                        alert("API nicht konfiguriert (Local Mode). Speichern simuliert.");
+                        setSelectedExpense(null);
+                        return;
+                    }
+                    
+                    const resp = await fetch(`${config.apiBaseUrl}/api/expenses/usage-purpose`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            SK: selectedExpense.SK,
+                            usagePurpose: inputVal
+                        })
+                    });
+                    
+                    if (!resp.ok) throw new Error("Fehler beim Speichern");
+                    
+                    // Reload table
+                    setRefreshLocal(prev => prev + 1);
+                    setSelectedExpense(null);
+                  } catch (e) {
+                    console.error("Save usage error:", e);
+                    alert("Konnte Verwendungszweck nicht speichern.");
+                  } finally {
+                    setIsSavingUsage(false);
+                  }
+                }} 
+                disabled={isSavingUsage}
+                className="rounded-full bg-[var(--color-primary)] px-6 py-2 text-sm font-semibold text-[var(--color-text-inverse)] shadow-md transition hover:bg-[var(--color-primary-hover)] disabled:opacity-70 flex items-center gap-2"
+              >
+                {isSavingUsage ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Lädt...
+                  </>
+                ) : 'Speichern'}
+              </button>
             </div>
           </div>
         </div>
