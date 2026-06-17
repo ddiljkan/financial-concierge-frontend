@@ -3,7 +3,7 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "Fetching API Gateway URL from AWS SSM Parameter Store..."
+        - echo "Fetching configuration from AWS SSM Parameter Store..."
         - export ENVIRONMENT=${ENV:-dev}
         - export API_BASE_URL=$(aws ssm get-parameter --name "/fc/$ENVIRONMENT/api_endpoint" --region eu-central-1 --query "Parameter.Value" --output text)
         - echo "Generating config.js for environment $ENVIRONMENT..."
@@ -12,7 +12,9 @@ frontend:
           window.APP_CONFIG = {
             API_BASE_URL: '${API_BASE_URL}',
             UPLOAD_PATH: '/api/upload-url',
-            AWS_REGION: 'eu-central-1',
+            AWS_REGION: '${VITE_AWS_REGION}',
+            COGNITO_USER_POOL_ID: '${VITE_COGNITO_POOL_ID}',
+            COGNITO_CLIENT_ID: '${VITE_COGNITO_CLIENT_ID}',
             APP_NAME: 'Financial Concierge'
           };
           EOF
