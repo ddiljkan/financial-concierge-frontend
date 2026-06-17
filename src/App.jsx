@@ -4,6 +4,7 @@ import { Dashboard } from './components/Dashboard';
 import { SettingsModal } from './components/SettingsModal';
 import { Sidebar } from './components/Sidebar';
 import { LoginPage } from './components/LoginPage';
+import { Reports } from './components/Reports';
 import { getCurrentUser, getIdToken, signOut, isAuthenticated as checkAuth } from './auth';
 
 function App() {
@@ -177,29 +178,29 @@ function App() {
         </header>
 
         <main id="main" className="p-8">
-          {currentSection === 'dashboard' && (
-            <>
-              {/* Optional Hero/UploadBox logic can go here or inside dashboard */}
-              {/* We keep Hero for now as per original layout */}
-              <div className="mb-8">
-                 <Hero 
-                    onUploadSuccess={handleUploadSuccess} 
-                    isProfileComplete={isProfileComplete}
-                    onOpenSettings={() => setIsSettingsOpen(true)}
-                 />
-              </div>
-              
-              {currentMonth && (
-                <Dashboard 
-                  currentMonth={currentMonth} 
-                  setCurrentMonth={setCurrentMonth} 
+          {currentSection === 'upload' && (
+            <div className="mb-8">
+               <Hero 
+                  onUploadSuccess={handleUploadSuccess} 
+                  isProfileComplete={isProfileComplete}
                   onOpenSettings={() => setIsSettingsOpen(true)}
-                  refreshTrigger={refreshTrigger}
-                />
-              )}
-            </>
+               />
+            </div>
           )}
-          {currentSection !== 'dashboard' && (
+          
+          {currentSection === 'dashboard' && currentMonth && (
+            <Dashboard 
+              currentMonth={currentMonth} 
+              setCurrentMonth={setCurrentMonth} 
+              refreshTrigger={refreshTrigger}
+            />
+          )}
+
+          {currentSection === 'reports' && (
+             <Reports />
+          )}
+
+          {currentSection !== 'dashboard' && currentSection !== 'upload' && currentSection !== 'reports' && (
             <div className="flex h-[60vh] items-center justify-center text-[var(--color-text-muted)]">
               <div className="text-center">
                 <span className="text-4xl mb-4 block">🚧</span>

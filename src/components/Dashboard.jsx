@@ -41,7 +41,7 @@ const formatMonthShort = (monthStr) => {
   return date.toLocaleDateString('de-DE', { month: 'short' });
 };
 
-export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refreshTrigger }) {
+export function Dashboard({ currentMonth, setCurrentMonth, refreshTrigger }) {
   const [summaryData, setSummaryData] = useState(null);
   const [historyData, setHistoryData] = useState(null);
   const [expenses, setExpenses] = useState([]);
@@ -201,9 +201,6 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
             <span className="min-w-[120px] text-center text-[length:var(--text-sm)] font-semibold">{formatMonthLabel(currentMonth)}</span>
             <button onClick={handleNextMonth} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[color-mix(in_srgb,var(--color-text)_5%,transparent)]">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-            </button>
-            <button onClick={onOpenSettings} className="ml-2 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary-highlight)]">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18m-9-9h18"/></svg>
             </button>
           </div>
         </div>
