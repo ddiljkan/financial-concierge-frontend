@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getIdToken } from '../auth';
 
 export function UploadBox({ onUploadSuccess, isProfileComplete, onOpenSettings }) {
   const [files, setFiles] = useState([]);
@@ -30,6 +31,9 @@ export function UploadBox({ onUploadSuccess, isProfileComplete, onOpenSettings }
     
     const updatedFiles = [...newFiles];
 
+    // Fetch token once for all uploads in this batch
+    const token = await getIdToken();
+
     for (let i = 0; i < updatedFiles.length; i++) {
       const item = updatedFiles[i];
       const allowed = ['application/pdf', 'image/png', 'image/jpeg'];
@@ -51,10 +55,22 @@ export function UploadBox({ onUploadSuccess, isProfileComplete, onOpenSettings }
         continue;
       }
 
+      if (!token) {
+        updateItemStatus('✗ Nicht authentifiziert');
+        errorCount++;
+        continue;
+      }
+
       try {
         updateItemStatus('⏳ Presigned URL wird geholt...');
         const params = new URLSearchParams({ filename: item.name, contentType: item.type });
-        const presignResponse = await fetch(`${config.apiBaseUrl}${config.uploadPath}?${params}`, { method: 'GET' });
+        const presignResponse = await fetch(
+          `${config.apiBaseUrl}${config.uploadPath}?${params}`,
+          {
+            method: 'GET',
+            headers: { Authorization: token },
+          }
+        );
 
         if (!presignResponse.ok) throw new Error(`Status ${presignResponse.status}`);
 

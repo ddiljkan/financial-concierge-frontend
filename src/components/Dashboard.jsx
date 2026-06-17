@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getIdToken } from '../auth';
 
 const CATEGORY_ICONS = {
   "Lebensmittel": "🛒",
@@ -63,20 +64,34 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
       let newExpenses = [];
 
       if (isConfigured) {
+        const token = await getIdToken();
+        const authHeaders = token
+          ? { Authorization: token }
+          : {};
+
         try {
-          const expensesResp = await fetch(`${config.apiBaseUrl}/api/expenses?month=${currentMonth}`);
+          const expensesResp = await fetch(
+            `${config.apiBaseUrl}/api/expenses?month=${currentMonth}`,
+            { headers: authHeaders }
+          );
           if (expensesResp.ok) {
             const data = await expensesResp.json();
             newExpenses = data.expenses || [];
           }
         } catch (e) { console.warn("Failed to fetch expenses", e); }
         try {
-          const summaryResp = await fetch(`${config.apiBaseUrl}/api/expenses/summary?month=${currentMonth}`);
+          const summaryResp = await fetch(
+            `${config.apiBaseUrl}/api/expenses/summary?month=${currentMonth}`,
+            { headers: authHeaders }
+          );
           if (summaryResp.ok) newSummary = await summaryResp.json();
         } catch (e) { console.warn("Failed to fetch summary", e); }
         
         try {
-          const historyResp = await fetch(`${config.apiBaseUrl}/api/expenses/history?months=3`);
+          const historyResp = await fetch(
+            `${config.apiBaseUrl}/api/expenses/history?months=3`,
+            { headers: authHeaders }
+          );
           if (historyResp.ok) newHistory = await historyResp.json();
         } catch (e) { console.warn("Failed to fetch history", e); }
       }
@@ -97,7 +112,6 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
             { category: "Gastronomie", total: 90.0 }, { category: "Sonstiges", total: 400.20 }
           ];
         } else {
-          // Fallback for April and others
           categories = [
             { category: "Lebensmittel", total: 450.0 }, { category: "Transport", total: 120.0 },
             { category: "Gastronomie", total: 80.0 }, { category: "Sonstiges", total: 330.50 }
@@ -196,7 +210,6 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
 
         <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
           <div className="flex flex-col gap-4 rounded-2xl p-6 shadow-2xl glass relative overflow-hidden">
-            {/* Soft inner glow */}
             <div className="absolute -inset-1 rounded-[inherit] border border-white/5 pointer-events-none"></div>
             <h3 className="text-[length:var(--text-sm)] font-semibold uppercase tracking-[.08em] text-[var(--color-text-muted)]">Monatsbudget</h3>
             <div className="flex flex-wrap items-center justify-around gap-6">
@@ -228,7 +241,6 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
           </div>
 
           <div className="flex flex-col gap-4 rounded-2xl p-6 shadow-2xl glass relative overflow-hidden">
-            {/* Soft inner glow */}
             <div className="absolute -inset-1 rounded-[inherit] border border-white/5 pointer-events-none"></div>
             <h3 className="text-[length:var(--text-sm)] font-semibold uppercase tracking-[.08em] text-[var(--color-text-muted)]">Kategorien</h3>
             <div className="flex max-h-[320px] flex-col gap-4 overflow-y-auto pr-2">
@@ -260,7 +272,6 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
         </div>
 
         <div className="mt-6 flex flex-col gap-4 rounded-2xl p-6 shadow-2xl glass relative overflow-hidden">
-          {/* Soft inner glow */}
           <div className="absolute -inset-1 rounded-[inherit] border border-white/5 pointer-events-none"></div>
           <h3 className="text-[length:var(--text-sm)] font-semibold uppercase tracking-[.08em] text-[var(--color-text-muted)]">Ausgaben-Historie (3 Monate)</h3>
           <div className="relative flex h-[260px] items-end justify-around border-b border-[var(--color-border)] pb-4 pt-8">
@@ -409,15 +420,18 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
                   try {
                     const config = { apiBaseUrl: window.APP_CONFIG?.API_BASE_URL || '' };
                     if (!config.apiBaseUrl || config.apiBaseUrl.includes('REPLACE_WITH_API_ID')) {
-                        // Dev / Local fallback
                         alert("API nicht konfiguriert (Local Mode). Speichern simuliert.");
                         setSelectedExpense(null);
                         return;
                     }
                     
+                    const token = await getIdToken();
                     const resp = await fetch(`${config.apiBaseUrl}/api/expenses/usage-purpose`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                          'Content-Type': 'application/json',
+                          ...(token ? { Authorization: token } : {}),
+                        },
                         body: JSON.stringify({
                             SK: selectedExpense.SK,
                             usagePurpose: usagePurpose
@@ -426,7 +440,6 @@ export function Dashboard({ currentMonth, setCurrentMonth, onOpenSettings, refre
                     
                     if (!resp.ok) throw new Error("Fehler beim Speichern");
                     
-                    // Reload table
                     setRefreshLocal(prev => prev + 1);
                     setSelectedExpense(null);
                     setUsagePurpose("100% beruflich");

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getIdToken } from '../auth';
 
 const CATEGORIES_LIST = [
   "Lebensmittel", "Getränke", "Gastronomie", "Drogerie & Hygiene", "Kosmetik & Beauty",
@@ -29,12 +30,14 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
       setMonthlyBudget(localMonthlyBudget ? parseFloat(localMonthlyBudget) : 1500);
       setCategoryBudgets(localBudgets ? JSON.parse(localBudgets) : {});
 
-      // Load profile from API
       const fetchProfile = async () => {
         const config = { apiBaseUrl: window.APP_CONFIG?.API_BASE_URL || '' };
         if (config.apiBaseUrl && !config.apiBaseUrl.includes('REPLACE_WITH_API_ID')) {
           try {
-            const resp = await fetch(`${config.apiBaseUrl}/api/profile`);
+            const token = await getIdToken();
+            const resp = await fetch(`${config.apiBaseUrl}/api/profile`, {
+              headers: token ? { Authorization: token } : {},
+            });
             if (resp.ok) {
               const data = await resp.json();
               setProfession(data.profession || '');
@@ -49,7 +52,6 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
             }
           } catch(e) { console.error("Failed to fetch profile", e); }
         } else {
-            // Local fallback
             setProfession(localStorage.getItem('fc_profession') || '');
             setEmploymentType(localStorage.getItem('fc_employment') || 'Angestellt');
             setCountry(localStorage.getItem('fc_country') || 'Österreich');
@@ -81,10 +83,16 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
     let finalCategoryBudgets = categoryBudgets;
 
     if (isConfigured) {
+      const token = await getIdToken();
+      const authHeaders = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: token } : {}),
+      };
+
       try {
         const resp = await fetch(`${config.apiBaseUrl}/api/budget`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
             monthlyBudget: finalMonthlyBudget,
             categoryBudgets: finalCategoryBudgets
@@ -97,10 +105,9 @@ export function SettingsModal({ isOpen, onClose, onSave }) {
         finalMonthlyBudget = result.monthlyBudget;
         finalCategoryBudgets = result.categoryBudgets;
 
-        // Save Profile
         await fetch(`${config.apiBaseUrl}/api/profile`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({ 
             profession, employmentType, country, homeOffice, isStudent,
             hasSeparateWorkspace, isSmallBusiness, commutesToWork, hasChildren
