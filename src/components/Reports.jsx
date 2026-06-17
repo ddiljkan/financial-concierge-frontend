@@ -27,7 +27,13 @@ export function Reports() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterText, setFilterText] = useState("");
+  const [taxFilter, setTaxFilter] = useState("all");
   const [sortConfig, setSortConfig] = useState({ key: 'receiptDate', direction: 'desc' });
+
+  const [selectedExpense, setSelectedExpense] = useState(null);
+  const [usagePurpose, setUsagePurpose] = useState("100% beruflich");
+  const [isSavingUsage, setIsSavingUsage] = useState(false);
+  const [refreshLocal, setRefreshLocal] = useState(0);
 
   useEffect(() => {
     async function fetchAllExpenses() {
@@ -83,7 +89,7 @@ export function Reports() {
     }
     
     fetchAllExpenses();
-  }, []);
+  }, [refreshLocal]);
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -99,7 +105,17 @@ export function Reports() {
       const vendorMatch = (exp.vendor || "").toLowerCase().includes(search);
       const descMatch = (exp.description || "").toLowerCase().includes(search);
       const catMatch = (exp.category || "").toLowerCase().includes(search);
-      return vendorMatch || descMatch || catMatch;
+      
+      let taxMatch = true;
+      if (taxFilter === 'deductible') {
+        taxMatch = ['HIGH_PROBABILITY', 'PARTIAL'].includes(exp.taxDeductibility);
+      } else if (taxFilter === 'not_rejected') {
+        taxMatch = exp.taxDeductibility !== 'NOT_DEDUCTIBLE';
+      } else if (taxFilter === 'needs_info') {
+        taxMatch = exp.taxDeductibility === 'NEEDS_INFO';
+      }
+
+      return (vendorMatch || descMatch || catMatch) && taxMatch;
     });
 
     filtered.sort((a, b) => {
@@ -117,7 +133,7 @@ export function Reports() {
     });
 
     return filtered;
-  }, [expenses, filterText, sortConfig]);
+  }, [expenses, filterText, taxFilter, sortConfig]);
 
   const handleExportCSV = () => {
     const headers = ["Datum", "Anbieter", "Beschreibung", "Kategorie", "Betrag", "Steuer-Status", "Absetzbar (%)"];
@@ -160,6 +176,17 @@ export function Reports() {
             <h2 className="mt-1 font-display text-[length:var(--text-lg)] font-bold">Alle Ausgaben</h2>
           </div>
           <div className="flex items-center gap-3">
+            <select
+              value={taxFilter}
+              onChange={(e) => setTaxFilter(e.target.value)}
+              className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] py-2 px-4 pr-8 text-sm focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] appearance-none cursor-pointer"
+              style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '16px' }}
+            >
+              <option value="all">Alle Steuern</option>
+              <option value="not_rejected">Potenziell Absetzbar</option>
+              <option value="deductible">Sicher Absetzbar</option>
+              <option value="needs_info">Info benötigt</option>
+            </select>
             <div className="relative">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <input 
@@ -218,7 +245,7 @@ export function Reports() {
                       {exp.taxDeductibility === 'HIGH_PROBABILITY' && <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-500" title={exp.taxReasoning}>Absetzbar ({exp.taxPercentage}%)</span>}
                       {exp.taxDeductibility === 'PARTIAL' && <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2 py-0.5 text-xs font-semibold text-blue-500" title={exp.taxReasoning}>Teilweise ({exp.taxPercentage}%)</span>}
                       {exp.taxDeductibility === 'NOT_DEDUCTIBLE' && <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-semibold text-red-500" title={exp.taxReasoning}>Nicht absetzbar</span>}
-                      {exp.taxDeductibility === 'NEEDS_INFO' && <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-500">Info benötigt</span>}
+                      {exp.taxDeductibility === 'NEEDS_INFO' && <button onClick={() => setSelectedExpense(exp)} className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-500 hover:bg-amber-500/20 transition shadow-sm">Info benötigt</button>}
                       {!exp.taxDeductibility && <span className="text-[var(--color-text-faint)] text-xs">-</span>}
                     </td>
                   </tr>
@@ -230,6 +257,100 @@ export function Reports() {
           </div>
         </div>
       </div>
+
+      {/* Needs Info Modal */}
+      {selectedExpense && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-black/50 opacity-100 backdrop-blur-sm">
+          <div className="w-[min(400px,calc(100%-2rem))] flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl p-6">
+            <h3 className="font-display text-lg font-bold mb-2">Verwendungszweck angeben</h3>
+            <p className="text-sm text-[var(--color-text-muted)] mb-4">
+              <strong>{selectedExpense.vendor}</strong> ({selectedExpense.amount.toLocaleString('de-DE', {style: 'currency', currency: 'EUR'})})
+              <br/><br/>
+              <span className="text-amber-500">KI-Hinweis:</span> {selectedExpense.taxReasoning || "Bitte gib an, wofür dieser Betrag ausgegeben wurde."}
+            </p>
+            <div className="flex flex-col gap-3 mb-6">
+              {[
+                "100% beruflich",
+                "Überwiegend beruflich",
+                "Geringfügig beruflich",
+                "Rein privat"
+              ].map((option) => (
+                <label key={option} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors">
+                  <input 
+                    type="radio" 
+                    name="usagePurpose" 
+                    value={option} 
+                    checked={usagePurpose === option}
+                    onChange={(e) => setUsagePurpose(e.target.value)}
+                    className="w-4 h-4 text-[var(--color-primary)] focus:ring-[var(--color-primary)] border-gray-300"
+                  />
+                  <span className="text-sm font-medium">{option}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => {
+                  setSelectedExpense(null);
+                  setUsagePurpose("100% beruflich");
+                }} 
+                disabled={isSavingUsage}
+                className="rounded-full border border-[color-mix(in_srgb,var(--color-text)_12%,transparent)] px-4 py-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] disabled:opacity-50"
+              >
+                Abbrechen
+              </button>
+              <button 
+                onClick={async () => {
+                  if (!usagePurpose) return;
+                  
+                  setIsSavingUsage(true);
+                  try {
+                    const config = { apiBaseUrl: window.APP_CONFIG?.API_BASE_URL || '' };
+                    if (!config.apiBaseUrl || config.apiBaseUrl.includes('REPLACE_WITH_API_ID')) {
+                        alert("API nicht konfiguriert (Local Mode). Speichern simuliert.");
+                        setSelectedExpense(null);
+                        return;
+                    }
+                    
+                    const token = await getIdToken();
+                    const resp = await fetch(`${config.apiBaseUrl}/api/expenses/usage-purpose`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          ...(token ? { Authorization: token } : {}),
+                        },
+                        body: JSON.stringify({
+                            SK: selectedExpense.SK,
+                            usagePurpose: usagePurpose
+                        })
+                    });
+                    
+                    if (!resp.ok) throw new Error("Fehler beim Speichern");
+                    
+                    setRefreshLocal(prev => prev + 1);
+                    setSelectedExpense(null);
+                    setUsagePurpose("100% beruflich");
+                  } catch (e) {
+                    console.error("Save usage error:", e);
+                    alert("Konnte Verwendungszweck nicht speichern.");
+                  } finally {
+                    setIsSavingUsage(false);
+                  }
+                }} 
+                disabled={isSavingUsage}
+                className="rounded-full bg-[var(--color-primary)] px-6 py-2 text-sm font-semibold text-[var(--color-text-inverse)] shadow-md transition hover:bg-[var(--color-primary-hover)] disabled:opacity-70 flex items-center gap-2"
+              >
+                {isSavingUsage ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Lädt...
+                  </>
+                ) : 'Speichern'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
