@@ -170,7 +170,7 @@ function App() {
       />
       
       {/* Main Content Area */}
-      <div className="flex-1 lg:ml-64">
+      <div className="flex-1 min-w-0 lg:ml-64 flex flex-col">
         {/* Top Header */}
         <header className="sticky top-0 z-20 flex h-20 items-center justify-between lg:justify-end px-4 lg:px-8 glass border-b-0 border-[color-mix(in_srgb,var(--color-text)_10%,transparent)]">
           <button 
@@ -196,7 +196,7 @@ function App() {
           </div>
         </header>
 
-        <main id="main" className="p-8">
+        <main id="main" className="flex-1 p-4 lg:p-8">
           {currentSection === 'upload' && (
             <div className="mb-8">
                <Hero 
