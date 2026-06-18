@@ -8,6 +8,7 @@ import { getCurrentUser, getIdToken, signOut, isAuthenticated as checkAuth } fro
 
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [currentMonth, setCurrentMonth] = useState('');
   const [currentSection, setCurrentSection] = useState('dashboard');
@@ -110,6 +111,7 @@ function App() {
       // Optional: don't change section if it's just a modal
       setCurrentSection('dashboard');
     }
+    setIsSidebarOpen(false);
   };
 
   const handleLoginSuccess = async () => {
@@ -148,18 +150,35 @@ function App() {
     <div className="flex min-h-screen bg-[var(--color-bg)]">
       <a href="#main" className="absolute -left-[9999px] top-2 z-50 rounded-md bg-[var(--color-primary)] px-4 py-3 text-[var(--color-text-inverse)] focus:left-2">Skip to content</a>
       
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden transition-opacity" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar Navigation */}
       <Sidebar 
         currentSection={currentSection} 
         onNavigate={handleNavigate}
         user={user ? { name: user.name, email: user.email } : { name: 'User', email: '' }}
         onLogout={handleLogout}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
       
       {/* Main Content Area */}
       <div className="flex-1 lg:ml-64">
         {/* Top Header */}
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-end px-8 glass border-b-0 border-[color-mix(in_srgb,var(--color-text)_10%,transparent)]">
+        <header className="sticky top-0 z-20 flex h-20 items-center justify-between lg:justify-end px-4 lg:px-8 glass border-b-0 border-[color-mix(in_srgb,var(--color-text)_10%,transparent)]">
+          <button 
+            className="lg:hidden p-2 -ml-2 text-[var(--color-text-muted)] hover:text-white" 
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+
           <div className="flex items-center gap-4">
             <button className="text-[var(--color-text-muted)] hover:text-white">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>

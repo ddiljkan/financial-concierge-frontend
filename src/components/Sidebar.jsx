@@ -1,7 +1,7 @@
 import React from 'react';
 import logo from '../assets/Logo-FinCon.png';
 
-export function Sidebar({ currentSection, onNavigate, user, onLogout }) {
+export function Sidebar({ currentSection, onNavigate, user, onLogout, isOpen, onClose }) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'accounts', label: 'Accounts', icon: '💳' },
@@ -11,13 +11,22 @@ export function Sidebar({ currentSection, onNavigate, user, onLogout }) {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-[var(--color-border)] glass">
+    <aside className={`fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-[var(--color-border)] glass transition-transform duration-300 ease-in-out ${
+      isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+    }`}>
       {/* Brand */}
-      <div className="flex h-20 items-center gap-3 px-6">
-        <img src={logo} alt="Financial Concierge Logo" className="h-8 w-auto object-contain" />
-        <span className="font-display text-lg font-bold tracking-tight text-white">
-          Financial Concierge
-        </span>
+      <div className="flex h-20 items-center justify-between px-6">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <img src={logo} alt="Financial Concierge Logo" className="h-8 w-auto flex-shrink-0 object-contain" />
+          <span className="font-display text-lg font-bold tracking-tight text-white truncate">
+            Financial Concierge
+          </span>
+        </div>
+        {onClose && (
+          <button onClick={onClose} className="lg:hidden p-1 text-[var(--color-text-muted)] hover:text-white flex-shrink-0 ml-2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
