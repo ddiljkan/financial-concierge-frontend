@@ -175,11 +175,11 @@ export function Reports() {
             <span className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary-highlight)] px-3 py-2 text-[length:var(--text-xs)] font-bold uppercase tracking-[.08em] text-[var(--color-primary)]">Reports</span>
             <h2 className="mt-1 font-display text-[length:var(--text-lg)] font-bold">Alle Ausgaben</h2>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
             <select
               value={taxFilter}
               onChange={(e) => setTaxFilter(e.target.value)}
-              className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] py-2 px-4 pr-8 text-sm focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] appearance-none cursor-pointer"
+              className="w-full sm:w-auto rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] py-2 px-4 pr-8 text-sm focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] appearance-none cursor-pointer"
               style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '16px' }}
             >
               <option value="all">Alle Steuern</option>
@@ -187,19 +187,19 @@ export function Reports() {
               <option value="deductible">Sicher Absetzbar</option>
               <option value="needs_info">Info benötigt</option>
             </select>
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <input 
                 type="text" 
                 placeholder="Suchen..." 
                 value={filterText}
                 onChange={(e) => setFilterText(e.target.value)}
-                className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] py-2 pl-10 pr-4 text-sm focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+                className="w-full rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] py-2 pl-10 pr-4 text-sm focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
               />
             </div>
             <button 
               onClick={handleExportCSV}
-              className="flex items-center gap-2 rounded-full bg-[color-mix(in_srgb,var(--color-text)_5%,transparent)] px-4 py-2 text-sm font-semibold transition-colors hover:bg-[color-mix(in_srgb,var(--color-text)_10%,transparent)]"
+              className="flex w-full sm:w-auto justify-center items-center gap-2 rounded-full bg-[color-mix(in_srgb,var(--color-text)_5%,transparent)] px-4 py-2 text-sm font-semibold transition-colors hover:bg-[color-mix(in_srgb,var(--color-text)_10%,transparent)]"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
               Export CSV
