@@ -5,8 +5,8 @@ export function Sidebar({ currentSection, onNavigate, user, onLogout, isOpen, on
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'accounts', label: 'Accounts', icon: '💳' },
-    { id: 'budget', label: 'Budget', icon: '📉' },
     { id: 'reports', label: 'Reports', icon: '📈' },
+    { id: 'upload', label: 'Upload', icon: '📤' },
     { id: 'settings', label: 'Settings', icon: '⚙️' }
   ];
 
