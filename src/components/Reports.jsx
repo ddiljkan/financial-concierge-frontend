@@ -47,27 +47,13 @@ export function Reports() {
         const token = await getIdToken();
         const authHeaders = token ? { Authorization: token } : {};
         
-        // Fetch last 3 months for the demo
-        const d = new Date();
-        const months = [];
-        for (let i = 0; i < 3; i++) {
-          const date = new Date(d.getFullYear(), d.getMonth() - i, 1);
-          const yyyy = date.getFullYear();
-          const mm = String(date.getMonth() + 1).padStart(2, '0');
-          months.push(`${yyyy}-${mm}`);
-        }
-        
         try {
-          const promises = months.map(m => 
-            fetch(`${config.apiBaseUrl}/api/expenses?month=${m}`, { headers: authHeaders })
-              .then(res => res.ok ? res.json() : { expenses: [] })
-          );
-          const results = await Promise.all(promises);
-          results.forEach(res => {
-            if (res.expenses) {
-              allExpenses = [...allExpenses, ...res.expenses];
-            }
-          });
+          // Fetch all expenses without a month filter
+          const res = await fetch(`${config.apiBaseUrl}/api/expenses?month=all&limit=1000`, { headers: authHeaders });
+          const data = res.ok ? await res.json() : { expenses: [] };
+          if (data.expenses) {
+            allExpenses = data.expenses;
+          }
         } catch (e) {
           console.warn("Failed to fetch expenses for reports", e);
         }
